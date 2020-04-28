@@ -101,7 +101,12 @@ MuseScore {
                 );
                 var notes = el.notes;
                 for (var i = 0; i < notes.length; i++) {
-                    process_note(track, bar_tick, notes[i], lay_back_delta, envelope);
+                    if (true) {
+                        process_note(track, bar_tick, notes[i],
+                                     lay_back_delta, envelope);
+                    } else {
+                        reset_to_straight(notes[i]);
+                    }
                 }
             } else {
                 // ilog(2, "tick", bar_tick + ": not a chord:", el.name);
@@ -157,9 +162,7 @@ MuseScore {
 
         swing_note(quaver, note, envelope);
         lay_back_note(quaver, note, lay_back_delta);
-        var pevt = note.playEvents[0];
-        pevt.ontime = 0
-        pevt.len = 1000;
+        var pevt = pevts[0];
         ilog(
             4, "now:",
             "veloc", note.veloOffset,
@@ -168,8 +171,15 @@ MuseScore {
         );
     }
 
+    function reset_to_straight(note) {
+        note.veloType = NoteValueType.OFFSET_VAL;
+        note.veloOffset = 0;
+        var pevt = note.playEvents[0];
+        pevt.ontime = 0;
+        pevt.len = 1000;
+    }
+
     function adjust_velocity(quaver, note, envelope) {
-        // note.veloType = NoteValueType.OFFSET_VAL;
         note.veloType = NoteValueType.USER_VAL;
         // ilog(4, envelope, quaver);
         note.veloOffset = envelope[quaver];
