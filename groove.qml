@@ -180,6 +180,7 @@ MuseScore {
             4, "now:",
             "veloc", note.veloOffset,
             "on", pevt.ontime,
+            "len", pevt.len,
             "off", pevt.offtime
         );
     }
