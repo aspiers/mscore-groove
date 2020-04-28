@@ -88,8 +88,7 @@ MuseScore {
             1, "track", track,
             seg.name,
             "quaver", quaver,
-            "dur", seg.duration.str, seg.duration.ticks,
-            "par", seg.parent.type
+            "dur", seg.duration.str, seg.duration.ticks
         );
         // show_timing(2, seg);
 
@@ -98,8 +97,7 @@ MuseScore {
             if (el.type == Element.CHORD) {
                 ilog(
                     2, el.name,
-                    "dur", el.duration.str, el.duration.ticks,
-                    "par", el.parent.type
+                    "dur", el.duration.str, el.duration.ticks
                 );
                 var notes = el.notes;
                 for (var i = 0; i < notes.length; i++) {
