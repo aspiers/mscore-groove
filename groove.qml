@@ -73,16 +73,24 @@ MuseScore {
         var bar_tick = seg.tick - bar_start_tick;
 
         // top voice of top (lead) part
-        process_segment_track(bar_tick, seg, 0, 300,
+        process_segment_track(bar_tick, seg, 0, 120, 300,
                               [60, 100, 60, 100, 60, 100, 60, 100]);
 
         // top voice of second (bass) part
-        process_segment_track(bar_tick, seg, 4, 0,
+        process_segment_track(bar_tick, seg, 4, 150, -100,
                               [60, 120, 100, 120, 60, 120, 100, 120]);
+
+        // top voice of third (drums) part
+        process_segment_track(bar_tick, seg, 8, 400, 0,
+                              [80, 60, 110, 100, 80, 60, 110, 100]);
+
+        // lower voice of third (drums) part
+        process_segment_track(bar_tick, seg, 12, 300, 0,
+                              [100, 100, 60, 60, 100, 100, 60, 60]);
     }
 
-    function process_segment_track(bar_tick, seg, track, lay_back_delta,
-                                   envelope) {
+    function process_segment_track(bar_tick, seg, track,
+                                   swing, lay_back_delta, envelope) {
         var quaver = bar_tick / 240;
         ilog(
             1, "track", track,
@@ -103,7 +111,7 @@ MuseScore {
                 for (var i = 0; i < notes.length; i++) {
                     if (true) {
                         process_note(track, bar_tick, notes[i],
-                                     lay_back_delta, envelope);
+                                     swing, lay_back_delta, envelope);
                     } else {
                         reset_to_straight(notes[i]);
                     }
@@ -131,7 +139,8 @@ MuseScore {
         }
     }
 
-    function process_note(track, bar_tick, note, lay_back_delta, envelope) {
+    function process_note(track, bar_tick, note,
+                          swing, lay_back_delta, envelope) {
         var pevts = note.playEvents;
         ilog(
             3, note.name,
@@ -164,7 +173,7 @@ MuseScore {
                  quaver, bar_tick, note.playEvents[0].len);
         }
 
-        swing_note(quaver, note, envelope);
+        swing_note(quaver, note, swing, envelope);
         lay_back_note(quaver, note, lay_back_delta);
         var pevt = pevts[0];
         ilog(
@@ -244,8 +253,8 @@ MuseScore {
         return highest;
     }
 
-    function swing_note(quaver, note, lay_back_delta) {
-        var swing_delta = 150;
+    function swing_note(quaver, note, swing, lay_back_delta) {
+        var swing_delta = swing;
         var pevt = note.playEvents[0];
         var orig_duration = note.parent.duration.ticks;
         swing_delta *= 240 / orig_duration;
