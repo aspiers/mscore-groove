@@ -130,20 +130,24 @@ MuseScore {
 
     function process_note(track, bar_tick, note, lay_back_delta, envelope) {
         var quaver = bar_tick / 240;
-        var orig_len = note.parent.duration.ticks;
+        var next_note = find_adjacent_note(note,  1);
+        var orig_tick_len = next_note ?
+            next_note.parent.parent.tick - note.parent.parent.tick
+            : note.parent.duration.ticks;
         var pevts = note.playEvents;
         ilog(
             3, note.name,
             "par", note.parent.type,
-            "par2", note.parent.parent.type,
-            "len", orig_len / 240,
+            "par^2", note.parent.parent.type,
             "pitch", note.pitch,
+            "len", orig_tick_len,
+            "(" + (orig_tick_len / 240) + " quavers),",
             "veloc", note.veloOffset,
             "playEvents", pevts.length
         );
         // show_timing(4, note);
 
-        if (orig_len % 240 == 0 &&
+        if (orig_tick_len % 240 == 0 &&
             quaver == Math.round(quaver)) {
             adjust_velocity(quaver, note, envelope);
         } else {
