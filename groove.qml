@@ -73,16 +73,16 @@ MuseScore {
         var bar_tick = seg.tick - bar_start_tick;
 
         // top voice of top (lead) part
-        process_segment_track(bar_tick, seg, 0, 120, 300,
+        process_segment_track(bar_tick, seg, 0, 120, 250,
                               [60, 100, 60, 100, 60, 100, 60, 100]);
 
         // top voice of second (bass) part
-        process_segment_track(bar_tick, seg, 4, 150, -100,
-                              [60, 120, 100, 120, 60, 120, 100, 120]);
+        process_segment_track(bar_tick, seg, 4, 200, -70,
+                              [70, 100, 80, 100, 60, 100, 80, 100]);
 
         // top voice of third (drums) part
-        process_segment_track(bar_tick, seg, 8, 400, 0,
-                              [80, 60, 110, 100, 80, 60, 110, 100]);
+        process_segment_track(bar_tick, seg, 8, 350, 0,
+                              [80, 60, 110, 70, 80, 60, 110, 70]);
 
         // lower voice of third (drums) part
         process_segment_track(bar_tick, seg, 12, 300, 0,
