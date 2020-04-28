@@ -208,7 +208,7 @@ MuseScore {
     }
 
     function swing_note(quaver, note, lay_back_delta) {
-        var swing_delta = 200;
+        var swing_delta = 150;
         var pevt = note.playEvents[0];
         var orig_duration = note.parent.duration.ticks;
         swing_delta *= 240 / orig_duration;
