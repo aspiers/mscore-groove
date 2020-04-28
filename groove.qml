@@ -140,6 +140,10 @@ MuseScore {
             "playEvents", pevts.length
         );
 
+        // FIXME: The API doesn't yet provide any way to figure out
+        // whether a note is part of a tuplet, so we have to find the
+        // delta to the tick of the next segment to figure out the real
+        // length of the note.  The API shouldn't make us do this.
         var next_note = find_adjacent_note(note,  1);
         var orig_tick_len = next_note ?
             next_note.parent.parent.tick - note.parent.parent.tick
