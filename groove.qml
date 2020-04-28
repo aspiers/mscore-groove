@@ -170,10 +170,10 @@ MuseScore {
         // ilog(4, envelope, quaver);
         note.veloOffset = envelope[quaver];
         if (note.track == 0) { // REMOVE
-            var prevNote = find_adjacent_note(note, -1);
-            var nextNote = find_adjacent_note(note,  1);
-            if (prevNote && prevNote.pitch < note.pitch &&
-                nextNote && nextNote.pitch < note.pitch) {
+            var prev_note = find_adjacent_note(note, -1);
+            var next_note = find_adjacent_note(note,  1);
+            if (prev_note && prev_note.pitch < note.pitch &&
+                next_note && next_note.pitch < note.pitch) {
                 ilog(4, "> accenting peak of phrase");
                 // FIXME: adjust relative to contour?
                 note.veloOffset += 20;
