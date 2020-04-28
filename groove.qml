@@ -183,17 +183,36 @@ MuseScore {
         }
     }
 
+    function cursor_at(track, tick) {
+        var cursor = curScore.newCursor();
+        cursor.staffIdx = track / 4;
+        cursor.voice    = track % 4;
+        cursor.rewind(Cursor.SCORE_START);
+        // FIXME: this is horribly inefficient
+        while (cursor.segment.tick != tick) {
+            cursor.next();
+        }
+        // ilog(5, "cursor_at", cursor.segment.tick, tick);
+        return cursor;
+    }
+
     function find_adjacent_note(note, direction) {
         var seg = note.parent.parent;
+        var cursor = cursor_at(note.track, seg.tick);
+        // ilog(5, "find_adjacent_note START seg tick", seg.tick, cursor);
         var el;
-        // ilog(5, "find_adjacent_note START seg tick", seg.tick);
         do {
-            seg = direction > 0 ? seg.next : seg.prev;
-            if (! seg) {
-                ilog(5, "find_adjacent_note ran out of segments");
+            if (direction > 0) {
+                cursor.next();
+            } else {
+                cursor.prev();
+            }
+            // ilog(5, "find_adjacent_note segment", cursor.segment);
+            if (! cursor.segment) {
+                // ilog(5, "find_adjacent_note ran out of segments");
                 return null;
             }
-            el = seg.elementAt(note.track);
+            el = cursor.segment.elementAt(note.track);
             // ilog(5, "find_adjacent_note seg tick", seg.tick, "el", el);
         }
         while (! (el && el.type == Element.CHORD));
