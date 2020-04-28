@@ -156,7 +156,7 @@ MuseScore {
         var pevt = note.playEvents[0];
         pevt.ontime = 0
         pevt.len = 1000;
-        log(
+        ilog(
             4, "now:",
             "veloc", note.veloOffset,
             "on", pevt.ontime,
