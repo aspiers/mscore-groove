@@ -104,7 +104,7 @@ MuseScore {
                     process_note(track, bar_tick, notes[i], lay_back_delta, envelope);
                 }
             } else {
-                ilog(2, "tick", bar_tick + ": not a chord:", el.name);
+                // ilog(2, "tick", bar_tick + ": not a chord:", el.name);
             }
         }
     }
@@ -127,29 +127,31 @@ MuseScore {
     }
 
     function process_note(track, bar_tick, note, lay_back_delta, envelope) {
-        var quaver = bar_tick / 240;
+        var pevts = note.playEvents;
+        ilog(
+            3, note.name,
+            "pitch", note.pitch,
+            "veloc", note.veloOffset,
+            "playEvents", pevts.length
+        );
+
         var next_note = find_adjacent_note(note,  1);
         var orig_tick_len = next_note ?
             next_note.parent.parent.tick - note.parent.parent.tick
             : note.parent.duration.ticks;
-        var pevts = note.playEvents;
         ilog(
-            3, note.name,
-            "par", note.parent.type,
-            "par^2", note.parent.parent.type,
-            "pitch", note.pitch,
-            "len", orig_tick_len,
-            "(" + (orig_tick_len / 240) + " quavers),",
-            "veloc", note.veloOffset,
-            "playEvents", pevts.length
+            4,
+            "len", orig_tick_len + ",",
+            (orig_tick_len / 240), "quaver(s)"
         );
         // show_timing(4, note);
 
+        var quaver = bar_tick / 240;
         if (orig_tick_len % 240 == 0 &&
             quaver == Math.round(quaver)) {
             adjust_velocity(quaver, note, envelope);
         } else {
-            ilog(3, "duration not a quaver multiple",
+            ilog(4, "duration not a quaver multiple",
                  quaver, bar_tick, note.playEvents[0].len);
         }
 
