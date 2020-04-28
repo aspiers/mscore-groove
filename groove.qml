@@ -91,6 +91,7 @@ MuseScore {
             "dur", seg.duration.str, seg.duration.ticks,
             "par", seg.parent.type
         );
+        // show_timing(2, seg);
 
         var el = seg.elementAt(track);
         if (el) {
@@ -110,6 +111,23 @@ MuseScore {
         }
     }
 
+    function show_timing(indent, el) {
+        for (var prop in el) {
+            //if (prop.match("[dD]uration|[tT]ime|atorString")) {
+            if (prop.match("durationType")) {
+                var val = el[prop];
+                if (val) {
+                    if (val.str) {
+                        val = "FractionWrapper " + val.str;
+                    } else if (val.ticks) {
+                        val = val + " " + val.ticks + " ticks";
+                    }
+                }
+                ilog(indent, el.name, prop, val);
+            }
+        }
+    }
+
     function process_note(track, bar_tick, note, lay_back_delta, envelope) {
         var quaver = bar_tick / 240;
         var orig_len = note.parent.duration.ticks;
@@ -123,6 +141,7 @@ MuseScore {
             "veloc", note.veloOffset,
             "playEvents", pevts.length
         );
+        // show_timing(4, note);
 
         if (orig_len % 240 == 0 &&
             quaver == Math.round(quaver)) {
