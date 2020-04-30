@@ -77,8 +77,8 @@ MuseScore {
                               [60, 100, 60, 100, 60, 100, 60, 100]);
 
         // top voice of second (bass) part
-        process_segment_track(bar_tick, seg, 4, 200, -70,
-                              [70, 100, 80, 100, 60, 100, 80, 100]);
+        process_segment_track(bar_tick, seg, 4, 200, -50,
+                              [70, 100, 85, 100, 60, 100, 85, 100]);
 
         // top voice of third (drums) part
         process_segment_track(bar_tick, seg, 8, 350, 0,
