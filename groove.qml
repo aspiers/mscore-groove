@@ -204,7 +204,7 @@ MuseScore {
                 next_note && next_note.pitch < note.pitch) {
                 ilog(4, "> accenting peak of phrase");
                 // FIXME: adjust relative to contour?
-                note.veloOffset += 20;
+                note.veloOffset += 40;
             }
         }
     }
