@@ -73,24 +73,24 @@ MuseScore {
         var bar_tick = seg.tick - bar_start_tick;
 
         // top voice of top (lead) part
-        process_segment_track(0, bar, bar_tick, seg, 200, 250,
+        process_segment_track(0, bar, bar_tick, seg, 200, 250, 50,
                               [60, 75, 60, 75, 60, 75, 60, 75]);
 
         // top voice of second (bass) part
-        process_segment_track(4, bar, bar_tick, seg, 200, -50,
+        process_segment_track(4, bar, bar_tick, seg, 200, -50, 50,
                               [70, 100, 85, 100, 60, 100, 85, 100]);
 
         // top voice of third (drums) part
-        process_segment_track(8, bar, bar_tick, seg, 350, 0,
+        process_segment_track(8, bar, bar_tick, seg, 350, 0, 50,
                               [80, 60, 110, 70, 80, 60, 110, 70]);
 
         // lower voice of third (drums) part
-        process_segment_track(12, bar, bar_tick, seg, 300, 0,
+        process_segment_track(12, bar, bar_tick, seg, 300, 0, 50,
                               [100, 100, 60, 60, 100, 100, 60, 60]);
     }
 
-    function process_segment_track(track, bar, bar_tick, seg,
-                                   swing, lay_back_delta, envelope) {
+    function process_segment_track(track, bar, bar_tick, seg, swing,
+                                   lay_back_delta, random, envelope) {
         var quaver = bar_tick / 240;
         ilog(
             1, "track", track,
@@ -111,8 +111,8 @@ MuseScore {
                 var notes = el.notes;
                 for (var i = 0; i < notes.length; i++) {
                     if (true) {
-                        process_note(track, bar, bar_tick, notes[i],
-                                     swing, lay_back_delta, envelope);
+                        process_note(track, bar, bar_tick, notes[i], swing,
+                                     lay_back_delta, random, envelope);
                     } else {
                         reset_to_straight(notes[i]);
                     }
@@ -141,7 +141,7 @@ MuseScore {
     }
 
     function process_note(track, bar, bar_tick, note,
-                          swing, lay_back_delta, envelope) {
+                          swing, lay_back_delta, random, envelope) {
         var pevts = note.playEvents;
         ilog(
             3, note.name,
@@ -176,7 +176,7 @@ MuseScore {
 
         swing_note(quaver, note, swing, envelope);
         lay_back_note(quaver, note, lay_back_delta);
-        randomise_placement(note, 50);
+        randomise_placement(note, random);
         var pevt = pevts[0];
         ilog(
             4, "now:",
