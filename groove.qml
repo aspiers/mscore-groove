@@ -173,12 +173,12 @@ MuseScore {
         if (orig_tick_len % 240 == 0 &&
             quaver == Math.round(quaver)) {
             adjust_velocity(quaver, note, envelope);
+            swing_note(quaver, note, swing, envelope);
         } else {
             ilog(4, "duration not a quaver multiple",
                  quaver, bar_tick, note.playEvents[0].len);
         }
 
-        swing_note(quaver, note, swing, envelope);
         lay_back_note(quaver, note, lay_back_delta);
         randomise_placement(note, random);
         var pevt = pevts[0];
