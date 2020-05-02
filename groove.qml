@@ -65,35 +65,36 @@ MuseScore {
         var bar_start_tick = seg.tick;
         ilog(0, "Bar " + i + " starts at tick " + bar_start_tick);
         for (; seg; seg = seg.nextInMeasure) {
-            process_segment(bar_start_tick, seg);
+            process_segment(i, bar_start_tick, seg);
         }
     }
 
-    function process_segment(bar_start_tick, seg) {
+    function process_segment(bar, bar_start_tick, seg) {
         var bar_tick = seg.tick - bar_start_tick;
 
         // top voice of top (lead) part
-        process_segment_track(bar_tick, seg, 0, 200, 250,
+        process_segment_track(0, bar, bar_tick, seg, 200, 250,
                               [60, 75, 60, 75, 60, 75, 60, 75]);
 
         // top voice of second (bass) part
-        process_segment_track(bar_tick, seg, 4, 200, -50,
+        process_segment_track(4, bar, bar_tick, seg, 200, -50,
                               [70, 100, 85, 100, 60, 100, 85, 100]);
 
         // top voice of third (drums) part
-        process_segment_track(bar_tick, seg, 8, 350, 0,
+        process_segment_track(8, bar, bar_tick, seg, 350, 0,
                               [80, 60, 110, 70, 80, 60, 110, 70]);
 
         // lower voice of third (drums) part
-        process_segment_track(bar_tick, seg, 12, 300, 0,
+        process_segment_track(12, bar, bar_tick, seg, 300, 0,
                               [100, 100, 60, 60, 100, 100, 60, 60]);
     }
 
-    function process_segment_track(bar_tick, seg, track,
+    function process_segment_track(track, bar, bar_tick, seg,
                                    swing, lay_back_delta, envelope) {
         var quaver = bar_tick / 240;
         ilog(
             1, "track", track,
+            "bar", bar,
             seg.name,
             "quaver", quaver,
             "dur", seg.duration.str, seg.duration.ticks
@@ -110,7 +111,7 @@ MuseScore {
                 var notes = el.notes;
                 for (var i = 0; i < notes.length; i++) {
                     if (true) {
-                        process_note(track, bar_tick, notes[i],
+                        process_note(track, bar, bar_tick, notes[i],
                                      swing, lay_back_delta, envelope);
                     } else {
                         reset_to_straight(notes[i]);
@@ -139,7 +140,7 @@ MuseScore {
         }
     }
 
-    function process_note(track, bar_tick, note,
+    function process_note(track, bar, bar_tick, note,
                           swing, lay_back_delta, envelope) {
         var pevts = note.playEvents;
         ilog(
@@ -175,6 +176,7 @@ MuseScore {
 
         swing_note(quaver, note, swing, envelope);
         lay_back_note(quaver, note, lay_back_delta);
+        randomise_placement(note, 50);
         var pevt = pevts[0];
         ilog(
             4, "now:",
@@ -282,6 +284,13 @@ MuseScore {
     function lay_back_note(quaver, note, lay_back_delta) {
         var pevt = note.playEvents[0];
         pevt.ontime += lay_back_delta;
+    }
+
+    function randomise_placement(note, plus_minus_max) {
+        var pevt = note.playEvents[0];
+        var orig = pevt.ontime;
+        pevt.ontime += (Math.random() - 0.5) * 2 * plus_minus_max;
+        ilog(4, "ontime", orig, "-> random", pevt.ontime);
     }
 
     function dump_play_ev(event) {
