@@ -199,22 +199,20 @@ MuseScore {
         note.veloType = NoteValueType.USER_VAL;
         // ilog(4, envelope, quaver);
         note.veloOffset = envelope[quaver];
-        if (note.track == 0) { // REMOVE
-            var prev_note = find_adjacent_note(note, -1);
-            var next_note = find_adjacent_note(note,  1);
-            if (prev_note && prev_note.pitch < note.pitch &&
-                next_note && next_note.pitch < note.pitch) {
-                ilog(4, "> accenting peak of phrase");
-                // FIXME: adjust relative to contour?
-                note.veloOffset = 120;
-            } else if (next_note) {
-                var now = note.parent.parent.tick;
-                var next = next_note.parent.parent.tick;
-                ilog(4, "now", now, "next", next, "delta", next - now);
-                if (next - now > 240) {
-                    ilog(4, "> accenting end of phrase");
-                    note.veloOffset = 90;
-                }
+        var prev_note = find_adjacent_note(note, -1);
+        var next_note = find_adjacent_note(note,  1);
+        if (prev_note && prev_note.pitch < note.pitch &&
+            next_note && next_note.pitch < note.pitch) {
+            ilog(4, "> accenting peak of phrase");
+            // FIXME: adjust relative to contour?
+            note.veloOffset = 120;
+        } else if (next_note) {
+            var now = note.parent.parent.tick;
+            var next = next_note.parent.parent.tick;
+            ilog(4, "now", now, "next", next, "delta", next - now);
+            if (next - now > 240) {
+                ilog(4, "> accenting end of phrase");
+                note.veloOffset = 90;
             }
         }
     }
