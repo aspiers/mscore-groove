@@ -61,6 +61,7 @@ MuseScore {
     }
 
     function process_bar(i, bar) {
+        // if (i != 3) return;
         var seg = bar.firstSegment;
         var bar_start_tick = seg.tick;
         ilog(0, "Bar " + i + " starts at tick " + bar_start_tick);
