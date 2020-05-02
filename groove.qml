@@ -155,13 +155,14 @@ MuseScore {
         // delta to the tick of the next segment to figure out the real
         // length of the note.  The API shouldn't make us do this.
         var next_note = find_adjacent_note(note,  1);
-        var orig_tick_len = next_note ?
+        var actual_tick_len = next_note ?
             next_note.parent.parent.tick - note.parent.parent.tick
             : note.parent.duration.ticks;
+        var ontime_quaver = bar_tick / 240;
         ilog(
             4,
-            "len", orig_tick_len + ",",
-            (orig_tick_len / 240), "quaver(s)"
+            "@ quaver", ontime_quaver,
+            "len", actual_tick_len, "ticks"
         );
         // show_timing(4, note);
 
@@ -169,17 +170,18 @@ MuseScore {
         pevt.ontime = 0;
         pevt.len = 1000;
 
-        var quaver = bar_tick / 240;
-        if (orig_tick_len % 240 == 0 &&
-            quaver == Math.round(quaver)) {
-            adjust_velocity(quaver, note, envelope);
-            swing_note(quaver, note, swing, envelope);
+        if (actual_tick_len % 240 == 0 &&
+            ontime_quaver == Math.round(ontime_quaver)) {
+            swing_note(ontime_quaver, note, swing, envelope);
+            adjust_velocity(ontime_quaver, note, envelope);
         } else {
-            ilog(4, "duration not a quaver multiple",
-                 quaver, bar_tick, note.playEvents[0].len);
+            ilog(4,
+                 "not a quaver multiple;",
+                 "bar tick", bar_tick,
+                 "notated len", note.playEvents[0].len);
         }
 
-        lay_back_note(quaver, note, lay_back_delta);
+        lay_back_note(ontime_quaver, note, lay_back_delta);
         randomise_placement(note, random);
         var pevt = pevts[0];
         ilog(
