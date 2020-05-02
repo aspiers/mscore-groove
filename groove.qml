@@ -73,8 +73,8 @@ MuseScore {
         var bar_tick = seg.tick - bar_start_tick;
 
         // top voice of top (lead) part
-        process_segment_track(bar_tick, seg, 0, 120, 250,
-                              [60, 80, 60, 80, 60, 80, 60, 80]);
+        process_segment_track(bar_tick, seg, 0, 200, 250,
+                              [60, 75, 60, 75, 60, 75, 60, 75]);
 
         // top voice of second (bass) part
         process_segment_track(bar_tick, seg, 4, 200, -50,
@@ -211,7 +211,7 @@ MuseScore {
                 ilog(4, "now", now, "next", next, "delta", next - now);
                 if (next - now > 240) {
                     ilog(4, "> accenting end of phrase");
-                    note.veloOffset = 100;
+                    note.veloOffset = 90;
                 }
             }
         }
