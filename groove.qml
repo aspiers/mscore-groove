@@ -216,7 +216,7 @@ MuseScore {
         var prev_note = find_adjacent_note(note, -1);
         var next_note = find_adjacent_note(note,  1);
         if (prev_note && prev_note.pitch < note.pitch &&
-            next_note && next_note.pitch < note.pitch) {
+            (!next_note || (next_note.pitch < note.pitch))) {
             ilog(4, "> accenting peak of phrase");
             // FIXME: adjust relative to contour?
             note.veloOffset = 120;
