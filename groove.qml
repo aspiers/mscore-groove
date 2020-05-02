@@ -99,19 +99,11 @@ MuseScore {
 
     function process_segment_track(trfs, track, bar, bar_tick, seg, swing,
                                    lay_back_delta, random, envelope) {
-        var quaver = bar_tick / 240;
-        ilog(
-            1, "track", track,
-            "bar", bar,
-            seg.name,
-            "quaver", quaver,
-            "dur", seg.duration.str, seg.duration.ticks
-        );
-        // show_timing(2, seg);
-
         var el = seg.elementAt(track);
         if (el) {
             if (el.type == Element.CHORD) {
+                show_seg(track, bar, bar_tick, seg);
+                // show_timing(2, seg);
                 ilog(
                     2, el.name,
                     "dur", el.duration.str, el.duration.ticks
@@ -126,9 +118,21 @@ MuseScore {
                     }
                 }
             } else {
+                // show_seg(track, bar, bar_tick, seg);
                 // ilog(2, "tick", bar_tick + ": not a chord:", el.name);
             }
         }
+    }
+
+    function show_seg(track, bar, bar_tick, seg) {
+        var quaver = bar_tick / 240;
+        ilog(
+            1, "track", track,
+            "bar", bar,
+            seg.name,
+            "quaver", quaver,
+            "dur", seg.duration.str, seg.duration.ticks
+        );
     }
 
     function show_timing(indent, el) {
