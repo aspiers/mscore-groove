@@ -74,7 +74,7 @@ MuseScore {
 
         // top voice of top (lead) part
         process_segment_track(bar_tick, seg, 0, 120, 250,
-                              [60, 100, 60, 100, 60, 100, 60, 100]);
+                              [60, 80, 60, 80, 60, 80, 60, 80]);
 
         // top voice of second (bass) part
         process_segment_track(bar_tick, seg, 4, 200, -50,
@@ -204,7 +204,15 @@ MuseScore {
                 next_note && next_note.pitch < note.pitch) {
                 ilog(4, "> accenting peak of phrase");
                 // FIXME: adjust relative to contour?
-                note.veloOffset += 40;
+                note.veloOffset = 120;
+            } else if (next_note) {
+                var now = note.parent.parent.tick;
+                var next = next_note.parent.parent.tick;
+                ilog(4, "now", now, "next", next, "delta", next - now);
+                if (next - now > 240) {
+                    ilog(4, "> accenting end of phrase");
+                    note.veloOffset = 100;
+                }
             }
         }
     }
