@@ -272,10 +272,12 @@ MuseScore {
             // On-beat
             pevt.ontime = 0;
             pevt.len = 1000 + swing_delta;
+            // ilog(4, "swing: lengthened");
         } else {
             // Off-beat
             pevt.ontime = swing_delta;
             pevt.len = 1000 - swing_delta;
+            // ilog(4, "swing: delayed / shortened");
         }
     }
 
