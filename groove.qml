@@ -165,6 +165,10 @@ MuseScore {
         );
         // show_timing(4, note);
 
+        var pevt = pevts[0];
+        pevt.ontime = 0;
+        pevt.len = 1000;
+
         var quaver = bar_tick / 240;
         if (orig_tick_len % 240 == 0 &&
             quaver == Math.round(quaver)) {
