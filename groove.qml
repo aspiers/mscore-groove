@@ -50,47 +50,54 @@ MuseScore {
 
     function walk() {
         var i = 1;
+        var track_rand_factories = {
+            0: smoothed_random_factory(5),
+            4: smoothed_random_factory(5),
+            8: smoothed_random_factory(5),
+            12: smoothed_random_factory(5)
+        };
+
         var cursor = curScore.newCursor();
         cursor.rewind(Cursor.SCORE_START);
         // cursor.rewind(Cursor.SELECTION_START);
         ilog(0, "cursor.element " + cursor.element.name);
         for (var seg = cursor.segment; seg; seg = cursor.nextMeasure()) {
-            process_bar(i, cursor.measure);
+            process_bar(track_rand_factories, i, cursor.measure);
             i++;
         }
     }
 
-    function process_bar(i, bar) {
+    function process_bar(trfs, i, bar) {
         // if (i != 3) return;
         var seg = bar.firstSegment;
         var bar_start_tick = seg.tick;
         ilog(0, "Bar " + i + " starts at tick " + bar_start_tick);
         for (; seg; seg = seg.nextInMeasure) {
-            process_segment(i, bar_start_tick, seg);
+            process_segment(trfs, i, bar_start_tick, seg);
         }
     }
 
-    function process_segment(bar, bar_start_tick, seg) {
+    function process_segment(trfs, bar, bar_start_tick, seg) {
         var bar_tick = seg.tick - bar_start_tick;
 
         // top voice of top (lead) part
-        process_segment_track(0, bar, bar_tick, seg, 200, 250, 50,
+        process_segment_track(trfs, 0, bar, bar_tick, seg, 200, 250, 100,
                               [60, 75, 60, 75, 60, 75, 60, 75]);
 
         // top voice of second (bass) part
-        process_segment_track(4, bar, bar_tick, seg, 200, -50, 50,
+        process_segment_track(trfs, 4, bar, bar_tick, seg, 200, -50, 100,
                               [70, 100, 85, 100, 60, 100, 85, 100]);
 
         // top voice of third (drums) part
-        process_segment_track(8, bar, bar_tick, seg, 350, 0, 50,
+        process_segment_track(trfs, 8, bar, bar_tick, seg, 350, 0, 100,
                               [80, 60, 110, 70, 80, 60, 110, 70]);
 
         // lower voice of third (drums) part
-        process_segment_track(12, bar, bar_tick, seg, 300, 0, 50,
+        process_segment_track(trfs, 12, bar, bar_tick, seg, 300, 0, 100,
                               [100, 100, 60, 60, 100, 100, 60, 60]);
     }
 
-    function process_segment_track(track, bar, bar_tick, seg, swing,
+    function process_segment_track(trfs, track, bar, bar_tick, seg, swing,
                                    lay_back_delta, random, envelope) {
         var quaver = bar_tick / 240;
         ilog(
@@ -112,8 +119,8 @@ MuseScore {
                 var notes = el.notes;
                 for (var i = 0; i < notes.length; i++) {
                     if (true) {
-                        process_note(track, bar, bar_tick, notes[i], swing,
-                                     lay_back_delta, random, envelope);
+                        process_note(trfs[track], track, bar, bar_tick, notes[i],
+                                     swing, lay_back_delta, random, envelope);
                     } else {
                         reset_to_straight(notes[i]);
                     }
@@ -141,7 +148,7 @@ MuseScore {
         }
     }
 
-    function process_note(track, bar, bar_tick, note,
+    function process_note(trf, track, bar, bar_tick, note,
                           swing, lay_back_delta, random, envelope) {
         var pevts = note.playEvents;
         ilog(
@@ -183,7 +190,7 @@ MuseScore {
         }
 
         lay_back_note(ontime_quaver, note, lay_back_delta);
-        randomise_placement(note, random);
+        randomise_placement(trf, note, random);
         var pevt = pevts[0];
         ilog(
             4, "now:",
@@ -293,11 +300,34 @@ MuseScore {
         pevt.ontime += lay_back_delta;
     }
 
-    function randomise_placement(note, plus_minus_max) {
+    function randomise_placement(trf, note, plus_minus_max) {
         var pevt = note.playEvents[0];
         var orig = pevt.ontime;
-        pevt.ontime += (Math.random() - 0.5) * 2 * plus_minus_max;
+        pevt.ontime += (trf.get() - 0.5) * 2 * plus_minus_max;
         ilog(4, "ontime", orig, "-> random", pevt.ontime);
+    }
+
+    function smoothed_random_factory(moving_avg_len) {
+        var factory = {
+            randoms: [],
+            get: function () {
+                var r = Math.random();
+                this.randoms.push(r);
+                if (this.randoms.length > moving_avg_len) {
+                    this.randoms.shift();
+                }
+                var sum = 0;
+                for (var i=0; i < this.randoms.length; i++) {
+                    sum += this.randoms[i];
+                }
+                var moving_avg = sum / moving_avg_len;
+                return moving_avg;
+            }
+        };
+        for (var i=0; i < 15; i++) {
+            factory.get();
+        }
+        return factory;
     }
 
     function dump_play_ev(event) {
