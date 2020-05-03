@@ -54,6 +54,7 @@ MuseScore {
             percent: percent || 50,
             a_ticks: ratio_to_ticks(cycle_len, a_ratios),
             b_ticks: ratio_to_ticks(cycle_len, b_ratios),
+            track_rng_factories: {},
 
             map: function (a) {
                 if (this.a_ticks.length != this.b_ticks.length) {
@@ -85,8 +86,17 @@ MuseScore {
                         return ((100 - this.percent) * a + this.percent * b) / 100;
                     }
                 }
+            },
+
+            random: function (track) {
+                return this.track_rng_factories[track].get();
             }
         };
+
+        for (var track = 0; track < curScore.ntracks; track++) {
+            groove.track_rng_factories[track] = smoothed_random_factory(5);
+        }
+
         return groove;
     }
 
