@@ -298,7 +298,7 @@ MuseScore {
             (!next_note || (next_note.pitch < note.pitch))) {
             ilog(4, "> accenting peak of phrase");
             // FIXME: adjust relative to contour?
-            note.veloOffset = 120;
+            note.veloOffset = 115;
             if (legato_notes(prev_note, note)) {
                 // Articulate notes immediately before accented peaks
                 ilog(4, ". shortening note immediately before peak");
