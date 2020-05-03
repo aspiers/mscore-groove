@@ -20,43 +20,60 @@ MuseScore {
             lead: new Groove(
                 fraction(8, 8),
                 [1, 1, 1, 1, 1, 1, 1, 1],
-                [2, 1, 2, 1, 2, 1, 2, 1],
-                80,  // percentage swung
-                250, // lay_back_delta
-                [60, 75, 60, 75, 60, 75, 60, 75] // velocity envelope
+                [2, 1, 2, 1, 2, 1, 2, 1], {
+                    swing_percentage: 80,
+                    lay_back_delta: 250,
+                    velocity_envelope: [60, 75, 60, 75, 60, 75, 60, 75],
+                    peak_velocity: 115,
+                    pre_peak_shortening: 300,
+                    phrase_end_velocity: 90
+                }
             ),
             bass: new Groove(
                 fraction(8, 8),
                 [1, 1, 1, 1, 1, 1, 1, 1],
                 [2, 1, 2, 1, 2, 1, 2, 1],
-                70,  // percentage swung
-                -50, // lay_back_delta
-                [70, 100, 85, 100, 60, 100, 85, 100] // velocity envelope
+                {
+                    swing_percentage: 70,
+                    lay_back_delta: -50,
+                    velocity_envelope: [70, 100, 85, 100, 60, 100, 85, 100],
+                }
             ),
             drums_1: new Groove(
                 fraction(8, 8),
                 [1, 1, 1, 1, 1, 1, 1, 1],
                 [2, 1, 2, 1, 2, 1, 2, 1],
-                120, // percentage swung
-                0,   // lay_back_delta
-                [80, 60, 110, 70, 80, 60, 110, 70] // velocity envelope
+                {
+                    swing_percentage: 120,
+                    velocity_envelope: [80, 60, 110, 70, 80, 60, 110, 70],
+                }
             ),
             drums_2: new Groove(
                 fraction(8, 8),
                 [1, 1, 1, 1, 1, 1, 1, 1],
                 [2, 1, 2, 1, 2, 1, 2, 1],
-                120, // percentage swung
-                0,   // lay_back_delta
-                [100, 100, 60, 60, 100, 100, 60, 60] // velocity envelope
+                {
+                    swing_percentage: 120,
+                    velocity_envelope: [100, 100, 60, 60, 100, 100, 60, 60],
+                }
             ),
-
+            samba: new Groove(
+                fraction(8, 8),
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [3, 2, 2, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 2, 2, 3],
+                {
+                    swing_percentage: 50,
+                    velocity_envelope: [100, 100, 60, 60, 100, 100, 60, 60],
+                }
+            ),
             braff: new Groove(
                 fraction(7, 8),
                 [1, 1, 1, 1, 1, 1, 1],
                 [2, 1, 1, 2, 2, 1, 2],
-                100, // percentage swung
-                0,   // lay_back_delta
-                [100, 100, 100, 100, 100, 100, 100] // velocity envelope
+                {
+                    swing_percentage: 75,
+                    velocity_envelope: [80, 60, 60, 80, 80, 60, 80],
+                }
             )
         };
 
@@ -66,6 +83,15 @@ MuseScore {
             8:  [100, groove_palette.drums_1],
             12: [100, groove_palette.drums_2]
         });
+
+        // tracks = get_track_context({
+        //     0:  [100, groove_palette.braff],
+        //     4:  [100, groove_palette.braff],
+        // });
+
+        // tracks = get_track_context({
+        //     0:  [100, groove_palette.samba],
+        // });
 
         //process_bars();
         walk_score(tracks);
@@ -95,7 +121,7 @@ MuseScore {
             fraction(7, 8),
             [1, 1, 1, 1, 1, 1, 1],
             [2, 1, 1, 2, 2, 1, 2],
-            80 // percentage swung
+            { swing_percentage: 80 }
         );
 
         Array.prototype.groove = function (groove) {
@@ -119,8 +145,7 @@ MuseScore {
         return context;
     }
 
-    function groove_factory(cycle_len, a_ratios, b_ratios, percent,
-                            lay_back_delta, velocity_envelope) {
+    function groove_factory(cycle_len, a_ratios, b_ratios, options) {
         if (a_ratios.length != b_ratios.length) {
             console.exception(
                 "ratios length mismatch:",
@@ -132,11 +157,14 @@ MuseScore {
         var groove = {
             a_ratios: a_ratios,
             b_ratios: b_ratios,
-            percent: percent || 50,
             a_ticks: ratio_to_ticks(cycle_len, a_ratios),
             b_ticks: ratio_to_ticks(cycle_len, b_ratios),
-            lay_back_delta: 0,
-            velocity_envelope: velocity_envelope,
+            swing_percentage: options.swing_percentage || 50,
+            lay_back_delta: options.lay_back_delta || 0,
+            velocity_envelope: options.velocity_envelope,
+            peak_velocity: options.peak_velocity,
+            pre_peak_shortening: options.pre_peak_shortening,
+            phrase_end_velocity: options.phrase_end_velocity,
 
             has_source_tick: function (tick) {
                 // No Array.includes in ES5?
@@ -167,7 +195,10 @@ MuseScore {
                         var b_interval = this.b_ticks[i + 1] - this.b_ticks[i];
                         var a_delta = (a - this.a_ticks[i]) / a_interval;
                         var b = this.b_ticks[i] + a_delta * b_interval;
-                        return ((100 - this.percent) * a + this.percent * b) / 100;
+                        return (
+                            (100 - this.swing_percentage) * a
+                                + this.swing_percentage * b)
+                            / 100;
                     }
                 }
             },
@@ -445,29 +476,31 @@ MuseScore {
             // ilog(4, envelope, quaver);
             note.veloOffset = new_velocity;
         }
-        maybe_accent_and_articulate(note);
+        maybe_accent_and_articulate(track.groove, note);
     }
 
-    function maybe_accent_and_articulate(note) {
+    function maybe_accent_and_articulate(groove, note) {
         var prev_note = find_adjacent_note(note, -1);
         var next_note = find_adjacent_note(note,  1);
         if (prev_note && prev_note.pitch < note.pitch &&
             (!next_note || (next_note.pitch < note.pitch))) {
-            ilog(4, "> accenting peak of phrase");
-            // FIXME: adjust relative to contour?
-            note.veloOffset = 115;
-            if (legato_notes(prev_note, note)) {
+            if (groove.peak_velocity) {
+                ilog(4, "> accenting peak of phrase");
+                // FIXME: adjust relative to contour?
+                note.veloOffset = groove.peak_velocity;
+            }
+            if (groove.pre_peak_shortening && legato_notes(prev_note, note)) {
                 // Articulate notes immediately before accented peaks
                 ilog(4, ". shortening note immediately before peak");
-                prev_note.playEvents[0].len -= 300;
+                prev_note.playEvents[0].len -= groove.pre_peak_shortening;
             }
-        } else if (next_note) {
+        } else if (next_note && groove.phrase_end_velocity) {
             var now = note.parent.parent.tick;
             var next = next_note.parent.parent.tick;
             // ilog(4, "now", now, "next", next, "delta", next - now);
             if (next - now > 240) {
                 ilog(4, "> accenting end of phrase");
-                note.veloOffset = 90;
+                note.veloOffset = groove.phrase_end_velocity;
             }
         }
     }
