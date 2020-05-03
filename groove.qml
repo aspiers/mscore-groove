@@ -235,7 +235,7 @@ MuseScore {
         }
     }
 
-    function cursor_at(track, tick) {
+    function cursor_at_tick(track, tick) {
         var cursor = curScore.newCursor();
         cursor.staffIdx = track / 4;
         cursor.voice    = track % 4;
@@ -244,7 +244,7 @@ MuseScore {
         while (cursor.segment.tick != tick) {
             cursor.next();
         }
-        // ilog(5, "cursor_at", cursor.segment.tick, tick);
+        // ilog(5, "cursor_at_tick", cursor.segment.tick, tick);
         return cursor;
     }
 
@@ -259,7 +259,7 @@ MuseScore {
     }
 
     function find_adjacent_chord_rest(track, seg, direction, type) {
-        var cursor = cursor_at(track, seg.tick);
+        var cursor = cursor_at_tick(track, seg.tick);
         // ilog(5, "find_adjacent_note START seg tick", seg.tick, cursor);
         var el;
         do {
