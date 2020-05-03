@@ -126,9 +126,10 @@ MuseScore {
     }
 
     function process_selection() {
-        //var selection = curScore.selection;
-        //var elements = selection.elements;
-        //for (var i = 0; i < elements.length; i++) {
+        var selection = curScore.selection;
+        var elements = selection.elements;
+        for (var i = 0; i < elements.length; i++) {
+        }
     }
 
     function process_bars() {
