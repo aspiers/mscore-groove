@@ -155,40 +155,16 @@ MuseScore {
     function process_note(trf, track, bar, bar_tick, note,
                           swing, lay_back_delta, random, envelope) {
         var pevts = note.playEvents;
+        var ontime_quaver = bar_tick / 240;
         ilog(
             3, note.name,
+            "@ quaver", ontime_quaver,
             "pitch", note.pitch,
             "veloc", note.veloOffset,
             "playEvents", pevts.length
         );
 
-        var ontime_quaver = bar_tick / 240;
-
-        // FIXME: The API doesn't yet provide any way to figure out
-        // whether a note is part of a tuplet, so we have to find the
-        // delta to the tick of the next segment to figure out the real
-        // length of the note.  The API shouldn't make us do this.
-        var seg = note.parent.parent;
-        var next_chord_rest = find_adjacent_chord_rest(track, seg, 1);
-        var actual_tick_len = note.parent.duration.ticks;
-        if (next_chord_rest) {
-            var next_seg = next_chord_rest.parent;
-            actual_tick_len = next_seg.tick - seg.tick;
-            ilog(
-                4,
-                "@ quaver", ontime_quaver,
-                "len", actual_tick_len, "ticks:",
-                "seg.tick", seg.tick,
-                "next_seg.tick", next_seg.tick
-            );
-        }
-        else {
-            ilog(
-                4,
-                "@ quaver", ontime_quaver,
-                "len", actual_tick_len, "ticks"
-            );
-        }
+        var actual_tick_len = get_element_tick_len(note.parent);
         // show_timing(4, note);
 
         var pevt = pevts[0];
@@ -216,6 +192,33 @@ MuseScore {
             "len", pevt.len,
             "off", pevt.offtime
         );
+    }
+
+    function get_element_tick_len(el) {
+        // FIXME: The API doesn't yet provide any way to figure out
+        // whether a note is part of a tuplet, so we have to find the
+        // delta to the tick of the next segment to figure out the real
+        // length of the note.  The API shouldn't make us do this.
+        var seg = el.parent;
+        var next_chord_rest = find_adjacent_chord_rest(el.track, seg, 1);
+        var actual_tick_len = el.duration.ticks;
+        if (next_chord_rest) {
+            var next_seg = next_chord_rest.parent;
+            actual_tick_len = next_seg.tick - seg.tick;
+            ilog(
+                4,
+                "len", actual_tick_len, "ticks:",
+                "seg.tick", seg.tick,
+                "next_seg.tick", next_seg.tick
+            );
+        }
+        else {
+            ilog(
+                4,
+                "len", actual_tick_len, "ticks"
+            );
+        }
+        return actual_tick_len;
     }
 
     function reset_to_straight(note) {
