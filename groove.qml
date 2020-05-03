@@ -260,24 +260,41 @@ MuseScore {
 
     function find_adjacent_chord_rest(track, seg, direction, type) {
         var cursor = cursor_at_tick(track, seg.tick);
-        // ilog(5, "find_adjacent_note START seg tick", seg.tick, cursor);
+        // ilog(5, "find_adjacent_chord_rest START seg tick", seg.tick, cursor);
         var el;
-        do {
+        var type_matched = false;
+        while (true) {
             if (direction > 0) {
                 cursor.next();
             } else {
                 cursor.prev();
             }
-            // ilog(5, "find_adjacent_note segment", cursor.segment);
+            // ilog(5, "find_adjacent_chord_rest segment", cursor.segment);
             if (! cursor.segment) {
-                // ilog(5, "find_adjacent_note ran out of segments");
+                // ilog(5, "find_adjacent_chord_rest ran out of segments");
                 return null;
             }
             el = cursor.segment.elementAt(track);
-            // ilog(5, "find_adjacent_note seg tick", seg.tick, "el", el);
+            // ilog(5, "find_adjacent_chord_rest seg tick", seg.tick, "el", el);
+
+            if (! el) {
+                // Cursor should be filtering for (Ms::SegmentType::ChordRest)
+                // elements within the current track, so presumably every
+                // segment should have an element.
+                ilog(1,
+                     "!!!!! BUG? find_adjacent_chord_rest got null element",
+                     "at seg tick", seg.tick);
+                continue;  // Keep looking
+            }
+
+            if (! type) {
+                // Chord or rest
+                return el;
+            } else if (el.type == type) {
+                // Got the type asked for
+                return el;
+            }
         }
-        while (! (el && el.type == type));
-        return el;
     }
 
     function get_highest_note_in_chord(chord) {
