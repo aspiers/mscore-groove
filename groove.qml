@@ -250,7 +250,16 @@ MuseScore {
 
     function find_adjacent_note(note, direction) {
         var seg = note.parent.parent;
-        var cursor = cursor_at(note.track, seg.tick);
+        var el = find_adjacent_chord_rest(note.track, seg, direction,
+                                          Element.CHORD);
+        if (el === null) {
+            return el;
+        }
+        return get_highest_note_in_chord(el);
+    }
+
+    function find_adjacent_chord_rest(track, seg, direction, type) {
+        var cursor = cursor_at(track, seg.tick);
         // ilog(5, "find_adjacent_note START seg tick", seg.tick, cursor);
         var el;
         do {
@@ -264,12 +273,15 @@ MuseScore {
                 // ilog(5, "find_adjacent_note ran out of segments");
                 return null;
             }
-            el = cursor.segment.elementAt(note.track);
+            el = cursor.segment.elementAt(track);
             // ilog(5, "find_adjacent_note seg tick", seg.tick, "el", el);
         }
-        while (! (el && el.type == Element.CHORD));
+        while (! (el && el.type == type));
+        return el;
+    }
 
-        var notes = el.notes;
+    function get_highest_note_in_chord(chord) {
+        var notes = chord.notes;
         var highest = notes[0];
         for (var i = 1; i < notes.length; i++) {
             if (notes[i].pitch > highest.pitch) {
