@@ -167,23 +167,23 @@ MuseScore {
         var bar_tick = seg.tick - bar_start_tick;
 
         // top voice of top (lead) part
-        process_segment_track(trfs, 0, bar, bar_tick, seg, 200, 250, 100,
+        process_track_segment(trfs, 0, bar, bar_tick, seg, 200, 250, 100,
                               [60, 75, 60, 75, 60, 75, 60, 75]);
 
         // top voice of second (bass) part
-        process_segment_track(trfs, 4, bar, bar_tick, seg, 200, -50, 100,
+        process_track_segment(trfs, 4, bar, bar_tick, seg, 200, -50, 100,
                               [70, 100, 85, 100, 60, 100, 85, 100]);
 
         // top voice of third (drums) part
-        process_segment_track(trfs, 8, bar, bar_tick, seg, 350, 0, 100,
+        process_track_segment(trfs, 8, bar, bar_tick, seg, 350, 0, 100,
                               [80, 60, 110, 70, 80, 60, 110, 70]);
 
         // lower voice of third (drums) part
-        process_segment_track(trfs, 12, bar, bar_tick, seg, 300, 0, 100,
+        process_track_segment(trfs, 12, bar, bar_tick, seg, 300, 0, 100,
                               [100, 100, 60, 60, 100, 100, 60, 60]);
     }
 
-    function process_segment_track(trfs, track, bar, bar_tick, seg, swing,
+    function process_track_segment(trfs, track, bar, bar_tick, seg, swing,
                                    lay_back_delta, random, envelope) {
         var el = seg.elementAt(track);
         if (! el) {
