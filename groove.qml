@@ -22,7 +22,7 @@ MuseScore {
         };
 
         //process_bars();
-        walk(track_rand_factories);
+        walk_score(track_rand_factories);
         // test_groove();
 
         curScore.endCmd();
@@ -139,7 +139,7 @@ MuseScore {
         }
     }
 
-    function walk(trfs) {
+    function walk_score(trfs) {
         var i = 1;
 
         var cursor = curScore.newCursor();
