@@ -185,26 +185,34 @@ MuseScore {
     function process_segment_track(trfs, track, bar, bar_tick, seg, swing,
                                    lay_back_delta, random, envelope) {
         var el = seg.elementAt(track);
-        if (el) {
-            if (el.type == Element.CHORD) {
-                show_seg(track, bar, bar_tick, seg);
-                // show_timing(2, seg);
-                ilog(
-                    2, el.name,
-                    "dur", el.duration.str, el.duration.ticks
-                );
-                var notes = el.notes;
-                for (var i = 0; i < notes.length; i++) {
-                    if (true) {
-                        process_note(trfs[track], track, bar, bar_tick, notes[i],
-                                     swing, lay_back_delta, random, envelope);
-                    } else {
-                        reset_to_straight(notes[i]);
-                    }
-                }
+        if (! el) {
+            return;
+        }
+
+        if (el.type == Element.CHORD) {
+            process_chord(trfs, track, bar, bar_tick, seg, el, swing,
+                          lay_back_delta, random, envelope);
+        } else {
+            // show_seg(track, bar, bar_tick, seg);
+            // ilog(2, "tick", bar_tick + ": not a chord:", el.name);
+        }
+    }
+
+    function process_chord(trfs, track, bar, bar_tick, seg, el, swing,
+                           lay_back_delta, random, envelope) {
+        show_seg(track, bar, bar_tick, seg);
+        // show_timing(2, seg);
+        ilog(
+            2, el.name,
+            "dur", el.duration.str, el.duration.ticks
+        );
+        var notes = el.notes;
+        for (var i = 0; i < notes.length; i++) {
+            if (true) {
+                process_note(trfs[track], track, bar, bar_tick, notes[i],
+                             swing, lay_back_delta, random, envelope);
             } else {
-                // show_seg(track, bar, bar_tick, seg);
-                // ilog(2, "tick", bar_tick + ": not a chord:", el.name);
+                reset_to_straight(notes[i]);
             }
         }
     }
