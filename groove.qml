@@ -244,6 +244,10 @@ MuseScore {
                 //     "No articulation length defined for tick", tick,
                 //     "in groove with ticks", this.a_ticks
                 // );
+            },
+
+            clone: function () {
+                return Object.create(this);
             }
         };
 
