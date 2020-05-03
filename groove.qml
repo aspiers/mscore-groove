@@ -16,10 +16,71 @@ MuseScore {
 
         //process_bars();
         walk();
+        // test_groove();
 
         curScore.endCmd();
 
         Qt.quit()
+    }
+
+    function test_groove() {
+        var Groove = groove_factory;
+
+        var groove = new Groove(
+            fraction(7, 8),
+            [1, 1, 1, 1, 1, 1, 1],
+            [2, 1, 1, 2, 2, 1, 2],
+            80 // percentage
+        );
+
+        Array.prototype.groove = function (groove) {
+            return this.map(function (x) { return groove.map(x); });
+        };
+
+        ilog(1, [0, 120, 240, 1000].groove(groove));
+    }
+
+    function groove_factory(cycle_len, a_ratios, b_ratios, percent) {
+        var groove = {
+            a_ratios: a_ratios,
+            b_ratios: b_ratios,
+            percent: percent || 50,
+            a_ticks: ratio_to_ticks(cycle_len, a_ratios),
+            b_ticks: ratio_to_ticks(cycle_len, b_ratios),
+
+            map: function (a) {
+                if (this.a_ticks.length != this.b_ticks.length) {
+                    console.exception(
+                        "ticks length mismatch:",
+                        this.a_ticks.length, "vs.", this.b_ticks.length
+                    );
+                    return null;
+                }
+
+                if (a < this.a_ticks[0]) {
+                    console.exception("Tick", a, "is below input range");
+                    return null;
+                }
+                if (a > this.a_ticks[this.a_ticks.length - 1]) {
+                    console.exception("Tick", a, "is above input range");
+                    return null;
+                }
+
+                for (var i = 0; i < this.a_ticks.length - 1; i++) {
+                    // ilog(2,
+                    //      "a interval from", this.a_ticks[i],
+                    //      "to", this.a_ticks[i + 1]);
+                    if (this.a_ticks[i] <= a && a <= this.a_ticks[i + 1]) {
+                        var a_interval = this.a_ticks[i + 1] - this.a_ticks[i];
+                        var b_interval = this.b_ticks[i + 1] - this.b_ticks[i];
+                        var a_delta = (a - this.a_ticks[i]) / a_interval;
+                        var b = this.b_ticks[i] + a_delta * b_interval;
+                        return ((100 - this.percent) * a + this.percent * b) / 100;
+                    }
+                }
+            }
+        };
+        return groove;
     }
 
     function ratio_to_ticks(cycle_len, ratios) {
@@ -38,35 +99,6 @@ MuseScore {
             cumulative.push(t);
         }
         return cumulative;
-    }
-
-    function interpolate_tick_via_ratios(cycle_len, a, b, percent, tick) {
-        var a_ticks = ratio_to_ticks(cycle_len, a);
-        var b_ticks = ratio_to_ticks(cycle_len, b);
-        ilog("a_ticks", a_ticks);
-        ilog("b_ticks", b_ticks);
-        return interpolate_tick_via_ticks(a_ticks, b_ticks, percent, tick);
-    }
-
-    function interpolate_tick_via_ticks(a_ticks, b_ticks, percent, a) {
-        console.assert(
-            a_ticks.length == b_ticks.length,
-            "ticks length mismatch:",
-            a_ticks.length, "vs.", b_ticks.length
-        );
-        for (var i = 0; i < a_ticks.length - 1; i++) {
-            ilog(2, "a interval from", a_ticks[i], "to", a_ticks[i + 1]);
-            if (a_ticks[i] <= a && a <= a_ticks[i + 1]) {
-                var a_interval = a_ticks[i + 1] - a_ticks[i];
-                var b_interval = b_ticks[i + 1] - b_ticks[i];
-                ilog(3, "a", a, "is in interval");
-                var a_delta = (a - a_ticks[i]) / a_interval;
-                var b = b_ticks[i] + a_delta * b_interval;
-                return ((100 - percent) * a + percent * b) / 100;
-            } else {
-                ilog(3, "a", a, "is not in interval");
-            }
-        }
     }
 
     function die() {
