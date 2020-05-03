@@ -22,6 +22,58 @@ MuseScore {
         Qt.quit()
     }
 
+    function ratio_to_ticks(cycle_len, ratios) {
+        var cumulative = cumsum(ratios);
+        var total = cumulative[cumulative.length - 1];
+        return cumulative.map(function (x) {
+            return x / total * cycle_len.ticks;
+        });
+    }
+
+    function cumsum(nums) {
+        var t = 0;
+        var cumulative = [t];
+        for (var i = 0; i < nums.length; i++) {
+            t += nums[i];
+            cumulative.push(t);
+        }
+        return cumulative;
+    }
+
+    function interpolate_tick_via_ratios(cycle_len, a, b, percent, tick) {
+        var a_ticks = ratio_to_ticks(cycle_len, a);
+        var b_ticks = ratio_to_ticks(cycle_len, b);
+        ilog("a_ticks", a_ticks);
+        ilog("b_ticks", b_ticks);
+        return interpolate_tick_via_ticks(a_ticks, b_ticks, percent, tick);
+    }
+
+    function interpolate_tick_via_ticks(a_ticks, b_ticks, percent, a) {
+        console.assert(
+            a_ticks.length == b_ticks.length,
+            "ticks length mismatch:",
+            a_ticks.length, "vs.", b_ticks.length
+        );
+        for (var i = 0; i < a_ticks.length - 1; i++) {
+            ilog(2, "a interval from", a_ticks[i], "to", a_ticks[i + 1]);
+            if (a_ticks[i] <= a && a <= a_ticks[i + 1]) {
+                var a_interval = a_ticks[i + 1] - a_ticks[i];
+                var b_interval = b_ticks[i + 1] - b_ticks[i];
+                ilog(3, "a", a, "is in interval");
+                var a_delta = (a - a_ticks[i]) / a_interval;
+                var b = b_ticks[i] + a_delta * b_interval;
+                return ((100 - percent) * a + percent * b) / 100;
+            } else {
+                ilog(3, "a", a, "is not in interval");
+            }
+        }
+    }
+
+    function die() {
+        console.error.apply(this, arguments);
+        Qt.quit();
+    }
+
     function show_parts() {
         console.log("Parts:");
         for (var i = 0; i < curScore.parts.length; i++) {
