@@ -14,20 +14,78 @@ MuseScore {
         show_parts();
         console.log("Selection: " + curScore.selection);
 
-        var track_rand_factories = {
-            0: smoothed_random_factory(5),
-            4: smoothed_random_factory(5),
-            8: smoothed_random_factory(5),
-            12: smoothed_random_factory(5)
+        var Groove = groove_factory;
+
+        var groove_palette = {
+            lead: new Groove(
+                fraction(8, 8),
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [2, 1, 2, 1, 2, 1, 2, 1],
+                80,  // percentage swung
+                250, // lay_back_delta
+                [60, 75, 60, 75, 60, 75, 60, 75] // velocity envelope
+            ),
+            bass: new Groove(
+                fraction(8, 8),
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [2, 1, 2, 1, 2, 1, 2, 1],
+                70,  // percentage swung
+                -50, // lay_back_delta
+                [70, 100, 85, 100, 60, 100, 85, 100] // velocity envelope
+            ),
+            drums_1: new Groove(
+                fraction(8, 8),
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [2, 1, 2, 1, 2, 1, 2, 1],
+                120, // percentage swung
+                0,   // lay_back_delta
+                [80, 60, 110, 70, 80, 60, 110, 70] // velocity envelope
+            ),
+            drums_2: new Groove(
+                fraction(8, 8),
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [2, 1, 2, 1, 2, 1, 2, 1],
+                120, // percentage swung
+                0,   // lay_back_delta
+                [100, 100, 60, 60, 100, 100, 60, 60] // velocity envelope
+            ),
+
+            braff: new Groove(
+                fraction(7, 8),
+                [1, 1, 1, 1, 1, 1, 1],
+                [2, 1, 1, 2, 2, 1, 2],
+                100, // percentage swung
+                0,   // lay_back_delta
+                [100, 100, 100, 100, 100, 100, 100] // velocity envelope
+            )
         };
 
+        var tracks = get_track_context({
+            0:  [100, groove_palette.lead],
+            4:  [100, groove_palette.bass],
+            8:  [100, groove_palette.drums_1],
+            12: [100, groove_palette.drums_2]
+        });
+
         //process_bars();
-        walk_score(track_rand_factories);
+        walk_score(tracks);
         // test_groove();
 
         curScore.endCmd();
 
         Qt.quit()
+    }
+
+    function get_track_context(tracks) {
+        var TrackContext = track_context;
+
+        for (var i in tracks) {
+            var randomness = tracks[i][0];
+            var groove = tracks[i][1];
+            tracks[i] = new TrackContext(i, randomness, groove);
+        }
+
+        return tracks;
     }
 
     function test_groove() {
@@ -37,34 +95,60 @@ MuseScore {
             fraction(7, 8),
             [1, 1, 1, 1, 1, 1, 1],
             [2, 1, 1, 2, 2, 1, 2],
-            80 // percentage
+            80 // percentage swung
         );
 
         Array.prototype.groove = function (groove) {
-            return this.map(function (x) { return groove.map(x); });
+            return this.map(function (x) { return groove.map_tick(x); });
         };
 
         ilog(1, [0, 120, 240, 1000].groove(groove));
     }
 
-    function groove_factory(cycle_len, a_ratios, b_ratios, percent) {
+    function track_context(track_num, randomness, groove) {
+        var context = {
+            num: track_num,
+            groove: groove,
+            randomness: randomness,
+            rng: smoothed_random_factory(5),
+
+            random: function () {
+                return (this.rng.get() - 0.5) * 2 * this.randomness;
+            }
+        };
+        return context;
+    }
+
+    function groove_factory(cycle_len, a_ratios, b_ratios, percent,
+                            lay_back_delta, velocity_envelope) {
+        if (a_ratios.length != b_ratios.length) {
+            console.exception(
+                "ratios length mismatch:",
+                a_ratios.length, "vs.", b_ratios.length
+            );
+            return null;
+        }
+
         var groove = {
             a_ratios: a_ratios,
             b_ratios: b_ratios,
             percent: percent || 50,
             a_ticks: ratio_to_ticks(cycle_len, a_ratios),
             b_ticks: ratio_to_ticks(cycle_len, b_ratios),
-            track_rng_factories: {},
+            lay_back_delta: 0,
+            velocity_envelope: velocity_envelope,
 
-            map: function (a) {
-                if (this.a_ticks.length != this.b_ticks.length) {
-                    console.exception(
-                        "ticks length mismatch:",
-                        this.a_ticks.length, "vs.", this.b_ticks.length
-                    );
-                    return null;
+            has_source_tick: function (tick) {
+                // No Array.includes in ES5?
+                for (var i = 0; i < this.a_ticks.length; i++) {
+                    if (tick == this.a_ticks[i]) {
+                        return true;
+                    }
                 }
+                return false;
+            },
 
+            map_tick: function (a) {
                 if (a < this.a_ticks[0]) {
                     console.exception("Tick", a, "is below input range");
                     return null;
@@ -88,14 +172,18 @@ MuseScore {
                 }
             },
 
-            random: function (track) {
-                return this.track_rng_factories[track].get();
+            tick_velocity: function (tick) {
+                for (var i = 0; i < this.a_ticks.length; i++) {
+                    if (tick == this.a_ticks[i]) {
+                        return this.velocity_envelope[i];
+                    }
+                }
+                // console.exception(
+                //     "No velocity defined for tick", tick,
+                //     "in groove with ticks", this.a_ticks
+                // );
             }
         };
-
-        for (var track = 0; track < curScore.ntracks; track++) {
-            groove.track_rng_factories[track] = smoothed_random_factory(5);
-        }
 
         return groove;
     }
@@ -150,7 +238,7 @@ MuseScore {
         }
     }
 
-    function walk_score(trfs) {
+    function walk_score(tracks) {
         var i = 1;
 
         var cursor = curScore.newCursor();
@@ -158,59 +246,45 @@ MuseScore {
         // cursor.rewind(Cursor.SELECTION_START);
         ilog(0, "cursor.element " + cursor.element.name);
         for (var seg = cursor.segment; seg; seg = cursor.nextMeasure()) {
-            process_bar(trfs, i, cursor.measure);
+            process_bar(tracks, i, cursor.measure);
             i++;
         }
     }
 
-    function process_bar(trfs, i, bar) {
-        // if (i != 3) return;
+    function process_bar(tracks, i, bar) {
+        // if (i > 1) return;
         var seg = bar.firstSegment;
         var bar_start_tick = seg.tick;
         ilog(0, "Bar " + i + " starts at tick " + bar_start_tick);
         for (; seg; seg = seg.nextInMeasure) {
-            process_segment(trfs, i, bar_start_tick, seg);
+            process_segment(tracks, i, bar_start_tick, seg);
         }
     }
 
-    function process_segment(trfs, bar, bar_start_tick, seg) {
+    function process_segment(tracks, bar, bar_start_tick, seg) {
         var bar_tick = seg.tick - bar_start_tick;
 
-        // top voice of top (lead) part
-        process_track_segment(trfs, 0, bar, bar_tick, seg, 200, 250, 100,
-                              [60, 75, 60, 75, 60, 75, 60, 75]);
-
-        // top voice of second (bass) part
-        process_track_segment(trfs, 4, bar, bar_tick, seg, 200, -50, 100,
-                              [70, 100, 85, 100, 60, 100, 85, 100]);
-
-        // top voice of third (drums) part
-        process_track_segment(trfs, 8, bar, bar_tick, seg, 350, 0, 100,
-                              [80, 60, 110, 70, 80, 60, 110, 70]);
-
-        // lower voice of third (drums) part
-        process_track_segment(trfs, 12, bar, bar_tick, seg, 300, 0, 100,
-                              [100, 100, 60, 60, 100, 100, 60, 60]);
+        for (var i in tracks) {
+            var track = tracks[i];
+            process_track_segment(track, bar, bar_tick, seg);
+        }
     }
 
-    function process_track_segment(trfs, track, bar, bar_tick, seg, swing,
-                                   lay_back_delta, random, envelope) {
-        var el = seg.elementAt(track);
+    function process_track_segment(track, bar, bar_tick, seg) {
+        var el = seg.elementAt(track.num);
         if (! el) {
             return;
         }
 
         if (el.type == Element.CHORD) {
-            process_chord(trfs, track, bar, bar_tick, seg, el, swing,
-                          lay_back_delta, random, envelope);
+            process_chord(track, bar, bar_tick, seg, el);
         } else {
             // show_seg(track, bar, bar_tick, seg);
             // ilog(2, "tick", bar_tick + ": not a chord:", el.name);
         }
     }
 
-    function process_chord(trfs, track, bar, bar_tick, seg, el, swing,
-                           lay_back_delta, random, envelope) {
+    function process_chord(track, bar, bar_tick, seg, el) {
         show_seg(track, bar, bar_tick, seg);
         // show_timing(2, seg);
         ilog(
@@ -220,8 +294,7 @@ MuseScore {
         var notes = el.notes;
         for (var i = 0; i < notes.length; i++) {
             if (true) {
-                process_note(trfs[track], track, bar, bar_tick, notes[i],
-                             swing, lay_back_delta, random, envelope);
+                process_note(track, bar, bar_tick, notes[i]);
             } else {
                 reset_to_straight(notes[i]);
             }
@@ -231,7 +304,7 @@ MuseScore {
     function show_seg(track, bar, bar_tick, seg) {
         var quaver = bar_tick / 240;
         ilog(
-            1, "track", track,
+            1, "track", track.num,
             "bar", bar,
             seg.name,
             "quaver", quaver,
@@ -256,38 +329,25 @@ MuseScore {
         }
     }
 
-    function process_note(trf, track, bar, bar_tick, note,
-                          swing, lay_back_delta, random, envelope) {
+    function process_note(track, bar, bar_on_tick, note) {
         var pevts = note.playEvents;
-        var ontime_quaver = bar_tick / 240;
         ilog(
             3, note.name,
-            "@ quaver", ontime_quaver,
+            "@ quaver", bar_on_tick / 240,
             "pitch", note.pitch,
             "veloc", note.veloOffset,
             "playEvents", pevts.length
         );
 
-        var actual_tick_len = get_element_tick_len(note.parent);
         // show_timing(4, note);
 
         var pevt = pevts[0];
         pevt.ontime = 0;
         pevt.len = 1000;
 
-        if (actual_tick_len % 240 == 0 &&
-            ontime_quaver == Math.round(ontime_quaver)) {
-            swing_note(ontime_quaver, note, swing, envelope);
-            adjust_velocity(ontime_quaver, note, envelope);
-        } else {
-            ilog(4,
-                 "not a quaver multiple;",
-                 "bar tick", bar_tick,
-                 "notated len", note.playEvents[0].len);
-        }
-
-        lay_back_note(ontime_quaver, note, lay_back_delta);
-        randomise_placement(trf, note, random);
+        maybe_swing_note(track, bar_on_tick, note);
+        lay_back_note(track, note);
+        randomise_placement(track, note);
         var pevt = pevts[0];
         ilog(
             4, "now:",
@@ -298,14 +358,44 @@ MuseScore {
         );
     }
 
-    function get_element_tick_len(el) {
+    function maybe_swing_note(track, bar_on_tick, note) {
+        var tick_len = get_note_tick_len(note);
+        if (note_aligns_with_groove(track.groove, bar_on_tick, tick_len, note)) {
+            swing_note(track, note, bar_on_tick, tick_len);
+            adjust_velocity(track, note, bar_on_tick);
+        }
+    }
+
+    function note_aligns_with_groove(groove, bar_on_tick, tick_len, note) {
+        var bar_off_tick = bar_on_tick + tick_len;
+
+        if (! groove.has_source_tick(bar_on_tick)) {
+            ilog(4,
+                 "bar on tick", bar_on_tick,
+                 "not aligned with groove", groove.a_ticks + ";",
+                 "notated len", note.playEvents[0].len);
+            return false;
+        }
+
+        if (! groove.has_source_tick(bar_off_tick)) {
+            ilog(4,
+                 "bar off tick", bar_off_tick,
+                 "not aligned with groove", groove.a_ticks + ";",
+                 "notated len", note.playEvents[0].len);
+            return false;
+        }
+
+        return true;
+    }
+
+    function get_chord_tick_len(chord) {
         // FIXME: The API doesn't yet provide any way to figure out
         // whether a note is part of a tuplet, so we have to find the
         // delta to the tick of the next segment to figure out the real
         // length of the note.  The API shouldn't make us do this.
-        var seg = el.parent;
-        var next_chord_rest = find_adjacent_chord_rest(el.track, seg, 1);
-        var actual_tick_len = el.duration.ticks;
+        var seg = chord.parent;
+        var next_chord_rest = find_adjacent_chord_rest(chord.track, seg, 1);
+        var actual_tick_len = chord.duration.ticks;
         if (next_chord_rest) {
             var next_seg = next_chord_rest.parent;
             actual_tick_len = next_seg.tick - seg.tick;
@@ -325,11 +415,18 @@ MuseScore {
         return actual_tick_len;
     }
 
-    function get_note_off_tick(note) {
+    function get_note_tick_len(note) {
+        return get_chord_tick_len(note.parent);
+    }
+
+    function get_note_on_tick(note) {
         var chord = note.parent;
         var seg = chord.parent;
-        var tick_len = get_element_tick_len(chord);
-        return seg.tick + tick_len;
+        return seg.tick;
+    }
+
+    function get_note_off_tick(note) {
+        return get_note_on_tick(note) + get_note_tick_len(note);
     }
 
     function reset_to_straight(note) {
@@ -340,10 +437,18 @@ MuseScore {
         pevt.len = 1000;
     }
 
-    function adjust_velocity(quaver, note, envelope) {
-        note.veloType = NoteValueType.USER_VAL;
-        // ilog(4, envelope, quaver);
-        note.veloOffset = envelope[quaver];
+    function adjust_velocity(track, note, bar_on_tick) {
+        var quaver = bar_on_tick / 240;
+        var new_velocity = track.groove.tick_velocity(bar_on_tick);
+        if (new_velocity) {
+            note.veloType = NoteValueType.USER_VAL;
+            // ilog(4, envelope, quaver);
+            note.veloOffset = new_velocity;
+        }
+        maybe_accent_and_articulate(note);
+    }
+
+    function maybe_accent_and_articulate(note) {
         var prev_note = find_adjacent_note(note, -1);
         var next_note = find_adjacent_note(note,  1);
         if (prev_note && prev_note.pitch < note.pitch &&
@@ -359,7 +464,7 @@ MuseScore {
         } else if (next_note) {
             var now = note.parent.parent.tick;
             var next = next_note.parent.parent.tick;
-            ilog(4, "now", now, "next", next, "delta", next - now);
+            // ilog(4, "now", now, "next", next, "delta", next - now);
             if (next - now > 240) {
                 ilog(4, "> accenting end of phrase");
                 note.veloOffset = 90;
@@ -450,34 +555,36 @@ MuseScore {
         return highest;
     }
 
-    function swing_note(quaver, note, swing, lay_back_delta) {
-        var swing_delta = swing;
+    function swing_note(track, note, bar_on_tick, tick_len) {
+        var bar_off_tick = bar_on_tick + tick_len;
+
         var pevt = note.playEvents[0];
-        var orig_duration = note.parent.duration.ticks;
-        swing_delta *= 240 / orig_duration;
-        // var pevt = note.createPlayEvent();
-        if (quaver % 2 == 0) {
-            // On-beat
-            pevt.ontime = 0;
-            pevt.len = 1000 + swing_delta;
-            // ilog(4, "swing: lengthened");
-        } else {
-            // Off-beat
-            pevt.ontime = swing_delta;
-            pevt.len = 1000 - swing_delta;
-            // ilog(4, "swing: delayed / shortened");
-        }
+        var new_on_tick = track.groove.map_tick(bar_on_tick);
+        var new_off_tick = track.groove.map_tick(bar_off_tick);
+        var new_tick_len = new_off_tick - new_on_tick;
+        var new_ontime = (new_on_tick - bar_on_tick) / tick_len * 1000;
+        ilog(4,
+             "Changing on tick from", bar_on_tick, "to", new_on_tick,
+             "actual tick_len", tick_len,
+             "==", new_ontime, " / 1000");
+        pevt.ontime = new_ontime;
+        var new_len = new_tick_len / tick_len * 1000;
+        ilog(4,
+             "Changing off tick from", bar_off_tick, "to", new_off_tick,
+             "new tick len", new_tick_len,
+             "==", new_len, " / 1000");
+        pevt.len = new_len;
     }
 
-    function lay_back_note(quaver, note, lay_back_delta) {
+    function lay_back_note(track, note) {
         var pevt = note.playEvents[0];
-        pevt.ontime += lay_back_delta;
+        pevt.ontime += track.groove.lay_back_delta;
     }
 
-    function randomise_placement(trf, note, plus_minus_max) {
+    function randomise_placement(track, note) {
         var pevt = note.playEvents[0];
         var orig = pevt.ontime;
-        pevt.ontime += (trf.get() - 0.5) * 2 * plus_minus_max;
+        pevt.ontime += track.random();
         ilog(4, "ontime", orig, "-> random", pevt.ontime);
     }
 
