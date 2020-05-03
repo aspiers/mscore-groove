@@ -507,9 +507,14 @@ MuseScore {
         var quaver = bar_on_tick / 240;
         var new_velocity = track.groove.tick_velocity(bar_on_tick);
         if (new_velocity) {
-            note.veloType = NoteValueType.USER_VAL;
-            // ilog(4, envelope, quaver);
-            note.veloOffset = new_velocity;
+            if (new_velocity >= 0) {
+                note.veloType = NoteValueType.USER_VAL;
+                // ilog(4, envelope, quaver);
+                note.veloOffset = new_velocity;
+            } else {
+                note.veloType = NoteValueType.OFFSET_VAL;
+                note.veloOffset = 0;
+            }
         }
         maybe_accent_and_articulate(track.groove, note, bar_on_tick);
     }
