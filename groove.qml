@@ -73,6 +73,7 @@ MuseScore {
                 {
                     swing_percentage: 65,
                     velocity_envelope: [80, 50, 60, 80, 80, 60, 80],
+                    articulation_envelope: [300, 300, 300, 300, 300, 300, 300],
                     peak_velocity: 100
                 }
             )
@@ -163,6 +164,7 @@ MuseScore {
             swing_percentage: options.swing_percentage || 50,
             lay_back_delta: options.lay_back_delta || 0,
             velocity_envelope: options.velocity_envelope,
+            articulation_envelope: options.articulation_envelope,
             peak_velocity: options.peak_velocity,
             pre_peak_shortening: options.pre_peak_shortening,
             phrase_end_velocity: options.phrase_end_velocity,
@@ -212,6 +214,18 @@ MuseScore {
                 }
                 // console.exception(
                 //     "No velocity defined for tick", tick,
+                //     "in groove with ticks", this.a_ticks
+                // );
+            },
+
+            tick_articulation: function (tick) {
+                for (var i = 0; i < this.a_ticks.length; i++) {
+                    if (tick == this.a_ticks[i]) {
+                        return this.articulation_envelope[i];
+                    }
+                }
+                // console.exception(
+                //     "No articulation length defined for tick", tick,
                 //     "in groove with ticks", this.a_ticks
                 // );
             }
@@ -477,12 +491,17 @@ MuseScore {
             // ilog(4, envelope, quaver);
             note.veloOffset = new_velocity;
         }
-        maybe_accent_and_articulate(track.groove, note);
+        maybe_accent_and_articulate(track.groove, note, bar_on_tick);
     }
 
-    function maybe_accent_and_articulate(groove, note) {
+    function maybe_accent_and_articulate(groove, note, bar_on_tick) {
         var prev_note = find_adjacent_note(note, -1);
         var next_note = find_adjacent_note(note,  1);
+
+        if (groove.articulation_envelope) {
+            note.playEvents[0].len -= groove.tick_articulation(bar_on_tick);
+        }
+
         if (prev_note && prev_note.pitch < note.pitch &&
             (!next_note || (next_note.pitch < note.pitch))) {
             if (groove.peak_velocity) {
