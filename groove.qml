@@ -162,20 +162,33 @@ MuseScore {
             "playEvents", pevts.length
         );
 
+        var ontime_quaver = bar_tick / 240;
+
         // FIXME: The API doesn't yet provide any way to figure out
         // whether a note is part of a tuplet, so we have to find the
         // delta to the tick of the next segment to figure out the real
         // length of the note.  The API shouldn't make us do this.
-        var next_note = find_adjacent_note(note,  1);
-        var actual_tick_len = next_note ?
-            next_note.parent.parent.tick - note.parent.parent.tick
-            : note.parent.duration.ticks;
-        var ontime_quaver = bar_tick / 240;
-        ilog(
-            4,
-            "@ quaver", ontime_quaver,
-            "len", actual_tick_len, "ticks"
-        );
+        var seg = note.parent.parent;
+        var next_chord_rest = find_adjacent_chord_rest(track, seg, 1);
+        var actual_tick_len = note.parent.duration.ticks;
+        if (next_chord_rest) {
+            var next_seg = next_chord_rest.parent;
+            actual_tick_len = next_seg.tick - seg.tick;
+            ilog(
+                4,
+                "@ quaver", ontime_quaver,
+                "len", actual_tick_len, "ticks:",
+                "seg.tick", seg.tick,
+                "next_seg.tick", next_seg.tick
+            );
+        }
+        else {
+            ilog(
+                4,
+                "@ quaver", ontime_quaver,
+                "len", actual_tick_len, "ticks"
+            );
+        }
         // show_timing(4, note);
 
         var pevt = pevts[0];
