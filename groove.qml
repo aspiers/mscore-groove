@@ -71,8 +71,9 @@ MuseScore {
                 [1, 1, 1, 1, 1, 1, 1],
                 [2, 1, 1, 2, 2, 1, 2],
                 {
-                    swing_percentage: 75,
-                    velocity_envelope: [80, 60, 60, 80, 80, 60, 80],
+                    swing_percentage: 65,
+                    velocity_envelope: [80, 50, 60, 80, 80, 60, 80],
+                    peak_velocity: 100
                 }
             )
         };
