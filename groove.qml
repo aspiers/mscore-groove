@@ -172,7 +172,8 @@ MuseScore {
             b_ratios: b_ratios,
             a_ticks: ratio_to_ticks(cycle_len, a_ratios),
             b_ticks: ratio_to_ticks(cycle_len, b_ratios),
-            swing_percentage: options.swing_percentage || 50,
+            swing_percentage: options.swing_percentage == null ?
+                50 : options.swing_percentage,
             lay_back_delta: options.lay_back_delta || 0,
             velocity_envelope: options.velocity_envelope,
             articulation_envelope: options.articulation_envelope,
@@ -209,6 +210,10 @@ MuseScore {
                         var b_interval = this.b_ticks[i + 1] - this.b_ticks[i];
                         var a_delta = (a - this.a_ticks[i]) / a_interval;
                         var b = this.b_ticks[i] + a_delta * b_interval;
+                        // ilog(2,
+                        //      (100 - this.swing_percentage) + "%", a,
+                        //      "+", this.swing_percentage + "%", b,
+                        //      "/ 100");
                         return (
                             (100 - this.swing_percentage) * a
                                 + this.swing_percentage * b)
