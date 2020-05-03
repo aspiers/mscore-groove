@@ -17,10 +17,28 @@ MuseScore {
         var Groove = groove_factory;
 
         var groove_palette = {
-            lead: new Groove(
+            straight: new Groove(
+                fraction(1, 4),
+                [1, 1],
+                [1, 1],
+                {
+                    swing_percentage: 0,
+                    velocity_envelope: [-1, -1],
+                }
+            ),
+            viennese_waltz: new Groove(
+                fraction(3, 4),
+                [1, 1, 1],
+                [1, 3, 2],
+                {
+                    swing_percentage: 30,
+                }
+            ),
+            bop_lead: new Groove(
                 fraction(8, 8),
                 [1, 1, 1, 1, 1, 1, 1, 1],
-                [2, 1, 2, 1, 2, 1, 2, 1], {
+                [2, 1, 2, 1, 2, 1, 2, 1],
+                {
                     swing_percentage: 80,
                     lay_back_delta: 250,
                     velocity_envelope: [60, 75, 60, 75, 60, 75, 60, 75],
@@ -29,7 +47,7 @@ MuseScore {
                     phrase_end_velocity: 90
                 }
             ),
-            bass: new Groove(
+            bop_bass: new Groove(
                 fraction(8, 8),
                 [1, 1, 1, 1, 1, 1, 1, 1],
                 [2, 1, 2, 1, 2, 1, 2, 1],
@@ -39,7 +57,7 @@ MuseScore {
                     velocity_envelope: [70, 100, 85, 100, 60, 100, 85, 100],
                 }
             ),
-            drums_1: new Groove(
+            bop_drums_1: new Groove(
                 fraction(8, 8),
                 [1, 1, 1, 1, 1, 1, 1, 1],
                 [2, 1, 2, 1, 2, 1, 2, 1],
@@ -48,7 +66,7 @@ MuseScore {
                     velocity_envelope: [80, 60, 110, 70, 80, 60, 110, 70],
                 }
             ),
-            drums_2: new Groove(
+            bop_drums_2: new Groove(
                 fraction(8, 8),
                 [1, 1, 1, 1, 1, 1, 1, 1],
                 [2, 1, 2, 1, 2, 1, 2, 1],
@@ -62,8 +80,11 @@ MuseScore {
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                 [3, 2, 2, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 2, 2, 3],
                 {
-                    swing_percentage: 50,
-                    velocity_envelope: [100, 100, 60, 60, 100, 100, 60, 60],
+                    swing_percentage: 80,
+                    velocity_envelope: [
+                        100, 100, 40, 110, 90, 100, 40, 110,
+                        90, 100, 40, 110, 90, 100, 40, 110
+                    ],
                 }
             ),
             braff_piano: new Groove(
@@ -90,25 +111,39 @@ MuseScore {
             )
         };
 
-        var tracks = get_track_context({
-            0:  [100, groove_palette.lead],
-            4:  [100, groove_palette.bass],
-            8:  [100, groove_palette.drums_1],
-            12: [100, groove_palette.drums_2]
+        var straight_tracks = get_track_context({
+            0:  [0, groove_palette.straight],
+            4:  [0, groove_palette.straight],
+            8:  [0, groove_palette.straight],
+            12: [0, groove_palette.straight]
         });
 
-        // tracks = get_track_context({
-        //     0:  [200, groove_palette.braff_piano],
-        //     4:  [100, groove_palette.braff_bass],
-        // });
+        var scrapple_tracks = get_track_context({
+            0:  [100, groove_palette.bop_lead],
+            4:  [100, groove_palette.bop_bass],
+            8:  [100, groove_palette.bop_drums_1],
+            12: [100, groove_palette.bop_drums_2]
+        });
 
-        // tracks = get_track_context({
-        //     0:  [100, groove_palette.samba],
-        // });
+        var braff_tracks = get_track_context({
+            0:  [200, groove_palette.braff_piano],
+            4:  [100, groove_palette.braff_bass],
+        });
 
-        //process_bars();
-        walk_score(tracks);
+        var samba_tracks = get_track_context({
+            0:  [100, groove_palette.samba],
+            4:  [100, groove_palette.samba],
+            8:  [100, groove_palette.samba],
+            12: [100, groove_palette.samba],
+            16: [100, groove_palette.samba],
+            20: [100, groove_palette.samba]
+        });
+
         // test_groove();
+        // process_bars();
+
+        // groove_palette.bop_lead.swing_percentage = 0;
+        walk_score(scrapple_tracks);
 
         curScore.endCmd();
 
