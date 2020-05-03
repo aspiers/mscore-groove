@@ -14,8 +14,15 @@ MuseScore {
         show_parts();
         console.log("Selection: " + curScore.selection);
 
+        var track_rand_factories = {
+            0: smoothed_random_factory(5),
+            4: smoothed_random_factory(5),
+            8: smoothed_random_factory(5),
+            12: smoothed_random_factory(5)
+        };
+
         //process_bars();
-        walk();
+        walk(track_rand_factories);
         // test_groove();
 
         curScore.endCmd();
@@ -132,21 +139,15 @@ MuseScore {
         }
     }
 
-    function walk() {
+    function walk(trfs) {
         var i = 1;
-        var track_rand_factories = {
-            0: smoothed_random_factory(5),
-            4: smoothed_random_factory(5),
-            8: smoothed_random_factory(5),
-            12: smoothed_random_factory(5)
-        };
 
         var cursor = curScore.newCursor();
         cursor.rewind(Cursor.SCORE_START);
         // cursor.rewind(Cursor.SELECTION_START);
         ilog(0, "cursor.element " + cursor.element.name);
         for (var seg = cursor.segment; seg; seg = cursor.nextMeasure()) {
-            process_bar(track_rand_factories, i, cursor.measure);
+            process_bar(trfs, i, cursor.measure);
             i++;
         }
     }
