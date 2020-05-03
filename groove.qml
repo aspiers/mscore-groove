@@ -66,12 +66,23 @@ MuseScore {
                     velocity_envelope: [100, 100, 60, 60, 100, 100, 60, 60],
                 }
             ),
-            braff: new Groove(
+            braff_piano: new Groove(
                 fraction(7, 8),
                 [1, 1, 1, 1, 1, 1, 1],
-                [2, 1, 1, 2, 2, 1, 2],
+                [3, 1, 2, 3, 3, 2, 3],
                 {
-                    swing_percentage: 65,
+                    swing_percentage: 70,
+                    velocity_envelope: [80, 50, 60, 80, 80, 60, 80],
+                    articulation_envelope: [500, 500, 500, 500, 500, 500, 500],
+                    peak_velocity: 100
+                }
+            ),
+            braff_bass: new Groove(
+                fraction(7, 8),
+                [1, 1, 1, 1, 1, 1, 1],
+                [3, 1, 2, 3, 3, 2, 3],
+                {
+                    swing_percentage: 70,
                     velocity_envelope: [80, 50, 60, 80, 80, 60, 80],
                     articulation_envelope: [300, 300, 300, 300, 300, 300, 300],
                     peak_velocity: 100
@@ -87,8 +98,8 @@ MuseScore {
         });
 
         // tracks = get_track_context({
-        //     0:  [100, groove_palette.braff],
-        //     4:  [100, groove_palette.braff],
+        //     0:  [200, groove_palette.braff_piano],
+        //     4:  [100, groove_palette.braff_bass],
         // });
 
         // tracks = get_track_context({
