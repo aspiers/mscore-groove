@@ -221,6 +221,13 @@ MuseScore {
         return actual_tick_len;
     }
 
+    function get_note_off_tick(note) {
+        var chord = note.parent;
+        var seg = chord.parent;
+        var tick_len = get_element_tick_len(chord);
+        return seg.tick + tick_len;
+    }
+
     function reset_to_straight(note) {
         note.veloType = NoteValueType.OFFSET_VAL;
         note.veloOffset = 0;
@@ -240,6 +247,11 @@ MuseScore {
             ilog(4, "> accenting peak of phrase");
             // FIXME: adjust relative to contour?
             note.veloOffset = 120;
+            if (legato_notes(prev_note, note)) {
+                // Articulate notes immediately before accented peaks
+                ilog(4, ". shortening note immediately before peak");
+                prev_note.playEvents[0].len -= 300;
+            }
         } else if (next_note) {
             var now = note.parent.parent.tick;
             var next = next_note.parent.parent.tick;
@@ -249,6 +261,15 @@ MuseScore {
                 note.veloOffset = 90;
             }
         }
+    }
+
+    function legato_notes(note_a, note_b) {
+        // ilog(5, "legato_notes?")
+        var note_a_off_tick = get_note_off_tick(note_a);
+        var seg_b = note_b.parent.parent;
+        // ilog(5, "note_a_off_tick", note_a_off_tick,
+        //      "seg_b.tick", seg_b.tick);
+        return note_a_off_tick == seg_b.tick;
     }
 
     function cursor_at_tick(track, tick) {
