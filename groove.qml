@@ -80,7 +80,7 @@ MuseScore {
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                 [3, 2, 2, 3, 3, 2, 2, 3, 3, 2, 2, 3, 3, 2, 2, 3],
                 {
-                    swing_percentage: 80,
+                    swing_percentage: 90,
                     velocity_envelope: [
                         100, 100, 40, 110, 90, 100, 40, 110,
                         90, 100, 40, 110, 90, 100, 40, 110
@@ -131,13 +131,17 @@ MuseScore {
         });
 
         var samba_tracks = get_track_context({
-            0:  [100, groove_palette.samba],
-            4:  [100, groove_palette.samba],
-            8:  [100, groove_palette.samba],
-            12: [100, groove_palette.samba],
-            16: [100, groove_palette.samba],
-            20: [100, groove_palette.samba]
+            0:  [100, groove_palette.samba], // piano
+            4:  [100, groove_palette.samba], // guitar
+            8:  [100, groove_palette.samba], // chocalho
+            12: [100, groove_palette.samba], // tamborim
+            16: [100, groove_palette.samba], // agogo
+            20: [100, groove_palette.samba.clone()], // caixa
+            24: [100, groove_palette.samba], // repinique
+            28: [100, groove_palette.samba.clone()]  // surdos
         });
+        samba_tracks[20].groove.lay_back_delta = -50;
+        samba_tracks[28].groove.lay_back_delta = -75;
 
         // test_groove();
         // process_bars();
