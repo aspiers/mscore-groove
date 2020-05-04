@@ -152,6 +152,8 @@ MuseScore {
 
         curScore.endCmd();
 
+        show_parts();
+
         Qt.quit()
     }
 
