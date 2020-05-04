@@ -40,3 +40,7 @@ as a significant extension of [its existing swing
 functionality](https://musescore.org/en/handbook/swing) so that no
 plugin is required.  This should facilitate more user-friendly and
 more powerful workflows.
+
+## License
+
+Please see [the `LICENSE` file](LICENSE).
