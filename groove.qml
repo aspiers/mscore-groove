@@ -93,7 +93,7 @@ MuseScore {
                 [3, 1, 2, 3, 3, 2, 3],
                 {
                     swing_percentage: 70,
-                    velocity_envelope: [80, 50, 60, 80, 80, 60, 80],
+                    velocity_envelope: [80, 40, 60, 80, 80, 60, 80],
                     articulation_envelope: [500, 500, 500, 500, 500, 500, 500],
                     peak_velocity: 100
                 }
