@@ -136,12 +136,10 @@ MuseScore {
             8:  [100, groove_palette.samba], // chocalho
             12: [100, groove_palette.samba], // tamborim
             16: [100, groove_palette.samba], // agogo
-            20: [100, groove_palette.samba.clone()], // caixa
+            20: [100, groove_palette.samba.clone({ lay_back_delta: -50 })], // caixa
             24: [100, groove_palette.samba], // repinique
-            28: [100, groove_palette.samba.clone()]  // surdos
+            28: [100, groove_palette.samba.clone({ lay_back_delta: -75 })]  // surdos
         });
-        samba_tracks[20].groove.lay_back_delta = -50;
-        samba_tracks[28].groove.lay_back_delta = -75;
 
         // test_groove();
         // process_bars();
@@ -307,7 +305,11 @@ MuseScore {
             },
 
             clone: function () {
-                return Object.create(this);
+                var clone = Object.create(this);
+                for (var key in Object.keys(arguments)) {
+                    clone[key] = arguments[key];
+                }
+                return clone;
             }
         };
 
