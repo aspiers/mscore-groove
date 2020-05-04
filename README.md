@@ -42,6 +42,19 @@ functionality](https://musescore.org/en/handbook/swing) so that no
 plugin is required.  This should facilitate more user-friendly and
 more powerful workflows.
 
+## Acknowledgements
+
+The design of this plugin was heavily influenced by discussions with,
+and advice from [Barak
+Schmool](https://www.ram.ac.uk/about-us/staff/barak-schmool), a
+composer, saxophonist, percussionist, and expert in world rhythms who
+teaches at several London music conservatoires and counts [Jacob
+Collier](http://jacobcollier.com/) amongst his former pupils.
+
+Visit [Barak's Instagram
+page](https://www.instagram.com/schmeinstein/) to see samples of his
+work.
+
 ## License
 
 Please see [the `LICENSE` file](LICENSE).
