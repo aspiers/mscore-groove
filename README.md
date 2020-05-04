@@ -21,7 +21,8 @@ the groove.
 This repository contains some examples:
 
 - [The A section of "Scrapple From The Apple"](examples/Scrapple/),
-  a bebop jazz tune by Charlie Parker
+  a bebop jazz tune by Charlie Parker.  You can also [view / listen to
+  this on musescore.com](https://musescore.com/user/3898956/scores/6114206/s/Bf73QN).
 
 - [An excerpt from "Crimson Waves"](examples/Crimson+Waves/) by
   Malcolm Braff, as described in [this
