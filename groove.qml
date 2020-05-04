@@ -18,12 +18,12 @@ MuseScore {
 
         var groove_palette = {
             straight: new Groove(
-                fraction(1, 4),
-                [1, 1],
-                [1, 1],
+                fraction(4, 4),
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
                 {
                     swing_percentage: 0,
-                    velocity_envelope: [-1, -1],
+                    velocity_envelope: [-1, -1, -1, -1, -1, -1, -1, -1],
                 }
             ),
             viennese_waltz: new Groove(
@@ -143,6 +143,7 @@ MuseScore {
         // process_bars();
 
         // groove_palette.bop_lead.swing_percentage = 0;
+
         walk_score(scrapple_tracks);
 
         curScore.endCmd();
@@ -207,7 +208,7 @@ MuseScore {
             b_ratios: b_ratios,
             a_ticks: ratio_to_ticks(cycle_len, a_ratios),
             b_ticks: ratio_to_ticks(cycle_len, b_ratios),
-            swing_percentage: options.swing_percentage == null ?
+            swing_percentage: options.swing_percentage === null ?
                 50 : options.swing_percentage,
             lay_back_delta: options.lay_back_delta || 0,
             velocity_envelope: options.velocity_envelope,
@@ -260,25 +261,43 @@ MuseScore {
             tick_velocity: function (tick) {
                 for (var i = 0; i < this.a_ticks.length; i++) {
                     if (tick == this.a_ticks[i]) {
-                        return this.velocity_envelope[i];
+                        var velocity = this.velocity_envelope[i];
+                        if (velocity === undefined) {
+                            console.exception(
+                                "No velocity defined at", i,
+                                "in velocity_envelope", this.velocity_envelope
+                            );
+                            return null;
+                        }
+                        return velocity;
                     }
                 }
                 // console.exception(
                 //     "No velocity defined for tick", tick,
                 //     "in groove with ticks", this.a_ticks
                 // );
+                return null;
             },
 
             tick_articulation: function (tick) {
                 for (var i = 0; i < this.a_ticks.length; i++) {
                     if (tick == this.a_ticks[i]) {
-                        return this.articulation_envelope[i];
+                        var articulation = this.articulation_envelope[i];
+                        if (articulation === undefined) {
+                            console.exception(
+                                "No articulation defined at", i,
+                                "in articulation_envelope", this.articulation_envelope
+                            );
+                            return null;
+                        }
+                        return articulation;
                     }
                 }
                 // console.exception(
                 //     "No articulation length defined for tick", tick,
                 //     "in groove with ticks", this.a_ticks
                 // );
+                return null;
             },
 
             clone: function () {
@@ -451,11 +470,13 @@ MuseScore {
         randomise_placement(track, note);
         var pevt = pevts[0];
         ilog(
-            4, "now:",
-            "veloc", note.veloOffset,
-            "on", pevt.ontime,
-            "len", pevt.len,
-            "off", pevt.offtime
+            4,
+            "veloc:",
+            note.veloType == NoteValueType.OFFSET_VAL ? "offset" : "user",
+            note.veloOffset,
+            "ontime:", pevt.ontime,
+            "len:", pevt.len,
+            "offtime:", pevt.offtime
         );
     }
 
@@ -541,14 +562,15 @@ MuseScore {
     function adjust_velocity(track, note, bar_on_tick) {
         var quaver = bar_on_tick / 240;
         var new_velocity = track.groove.tick_velocity(bar_on_tick);
-        if (new_velocity) {
+        if (new_velocity !== null) {
             if (new_velocity >= 0) {
                 note.veloType = NoteValueType.USER_VAL;
-                // ilog(4, envelope, quaver);
+                // ilog(4, "adjust_velocity ->", new_velocity);
                 note.veloOffset = new_velocity;
             } else {
                 note.veloType = NoteValueType.OFFSET_VAL;
                 note.veloOffset = 0;
+                // ilog(4, "adjust_velocity ->", new_velocity, "(reset)");
             }
         }
         maybe_accent_and_articulate(track.groove, note, bar_on_tick);
@@ -564,12 +586,13 @@ MuseScore {
 
         if (prev_note && prev_note.pitch < note.pitch &&
             (!next_note || (next_note.pitch < note.pitch))) {
-            if (groove.peak_velocity) {
+            if (groove.peak_velocity != null) {
                 ilog(4, "> accenting peak of phrase");
                 // FIXME: adjust relative to contour?
                 note.veloOffset = groove.peak_velocity;
             }
-            if (groove.pre_peak_shortening && legato_notes(prev_note, note)) {
+            if (groove.pre_peak_shortening != null &&
+                legato_notes(prev_note, note)) {
                 // Articulate notes immediately before accented peaks
                 ilog(4, ". shortening note immediately before peak");
                 prev_note.playEvents[0].len -= groove.pre_peak_shortening;
@@ -691,7 +714,7 @@ MuseScore {
 
     function lay_back_note(track, note) {
         var pevt = note.playEvents[0];
-        pevt.ontime += track.groove.lay_back_delta;
+        pevt.ontime += track.groove.lay_back_delta || 0;
     }
 
     function randomise_placement(track, note) {
